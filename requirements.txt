@@ -1,0 +1,12 @@
+certifi
+chardet
+future
+huepy
+idna
+instabot
+requests
+requests-toolbelt
+schedule
+six
+tqdm
+urllib3
