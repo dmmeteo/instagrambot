@@ -117,3 +117,5 @@ unfollowed.txt
 username_database.txt
 whitelist.txt
 *.checkpoint
+
+.idea
