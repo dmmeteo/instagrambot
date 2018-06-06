@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-
+from glob import glob
+import os
 import threading
 import time
 import schedule
 from instabot import Bot, utils
 import config
-from tqdm import tqdm
 
 
 bot = Bot(comments_file=config.COMMENTS_FILE,
@@ -17,14 +17,6 @@ bot.logger.info("Instagram bot. Safe to run 24/7!")
 random_user_file = utils.file(config.USERS_FILE)
 random_hashtag_file = utils.file(config.HASHTAGS_FILE)
 
-pbar1 = tqdm(
-    total=config.NUMBER_OF_NON_FOLLOWERS_TO_UNFOLLOW,
-    desc='To unfollow'
-)
-pbar2 = tqdm(
-    total=config.NUMBER_OF_FOLLOWERS_TO_FOLLOW,
-    desc='To follow'
-)
 
 def stats():
     bot.save_user_stats(bot.user_id)
@@ -51,21 +43,13 @@ def comment_medias():
 
 
 def unfollow_non_followers():
-    n_to_unfollows = config.NUMBER_OF_NON_FOLLOWERS_TO_UNFOLLOW
-    non_followers = set(bot.following) - set(bot.followers) - bot.friends_file.set
-    non_followers = list(non_followers)
-    for user_id in non_followers[:n_to_unfollows]:
-        bot.api.unfollow(user_id)
-        bot.delay('unfollow')
+    bot.unfollow_non_followers(n_to_unfollows=config.NUMBER_OF_NON_FOLLOWERS_TO_UNFOLLOW)
+
 
 def follow_users_from_hastag_file():
     bot.follow_users(bot.get_hashtag_users(random_hashtag_file.random()))
 
 
-def comment_hashtag():
-    hashtag = random_hashtag_file.random()
-    bot.logger.info("Commenting on hashtag: " + hashtag)
-    bot.comment_hashtag(hashtag)
 
 
 def run_threaded(job_fn):
@@ -73,7 +57,7 @@ def run_threaded(job_fn):
     job_thread.start()
 
 
-schedule.every(1).hour.do(run_threaded, stats)
+schedule.every(1).minutes.do(run_threaded, stats)
 schedule.every(1).minutes.do(run_threaded, like_hashtags)
 schedule.every(1).minutes.do(run_threaded, unfollow_non_followers)
 schedule.every(1).minutes.do(run_threaded, follow_users_from_hastag_file)
